@@ -9,3 +9,4 @@
 
 #define MAXBINDING 5
 #define TABLEN 4
+#define FIN_SERVEUR 0

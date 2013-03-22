@@ -1,6 +1,8 @@
 #include "include.h"
 #include "defobj.h"
 
+int display_object(obj object);
+
 int main(int argc, char **argv)
 {
 	int idSockServ, lengthServ; // Identifiant socket serveur et taille structure
@@ -8,11 +10,12 @@ int main(int argc, char **argv)
 	struct sockaddr_in saddrServ; // Adresse serveur
 	struct sockaddr_in saddrCli; // Adresse client
 	int servPort;
+	int status;
 	pid_t pid;
 
-	char *buffer = (char *) malloc(10);
+	obj objet;
 
-	printf("Le serveur fonctionne sur le port: %s\n", argv[1]);
+	printf("Le serveur fonctionne sur le port %s\n", argv[1]);
 	servPort = atoi(argv[1]);
 
 	// Création du socket
@@ -54,19 +57,39 @@ int main(int argc, char **argv)
 		pid = fork();
 		switch(pid) {
 			case 0:
-        		printf ("Je suis le fils\n");
-				if((recv(idSockCli, buffer, sizeof(char)*10, 0)) < 0) {
-					perror("rcv() Failed");
-					exit(0);
-				}
-				printf("%s\n", buffer);
+        		printf ("Traitement du client par le fils\n");
+				do {
+					if((recv(idSockCli, &objet, sizeof(objet), 0)) < 0) {
+						perror("rcv() Failed");
+						exit(0);
+					}
+					if (objet.ii != -1)
+						display_object(objet);
+				} while (objet.ii != -1);
+				return FIN_SERVEUR;
 				break;
 			case -1:
 				perror("Erreur");
 				break;
 			default:
-				printf ("Je suis le père\n");
-				waitpid(pid, NULL, 0);
+				waitpid(pid, &status, 0);
+				if (status == FIN_SERVEUR) {
+					printf("Fin du traitement par le fils, terminaison du serveur\n");
+					return 0;
+				} else {
+					printf("Fin du traitement par le fils, attente d'un nouveau client\n");
+				}
 		}
 	}
+	return 0;
+}
+
+int display_object(obj object) {
+	printf("Objet reçu:\n");
+	printf("%s\n", object.id);
+	printf("%s\n", object.desc);
+	printf("%d\n", object.ii);
+	printf("%d\n", object.jj);
+	printf("%f\n", object.dd);
+	return 0;
 }

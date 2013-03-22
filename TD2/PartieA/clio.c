@@ -1,7 +1,7 @@
 #include "include.h"
 #include "defobj.h"
 
-obj* init_tab();
+int init_tab(obj * tab);
 
 int main(int argc, char **argv)
 {
@@ -10,12 +10,13 @@ int main(int argc, char **argv)
 	int etat_connexion;
 	char * servName;
 	int servPort;
-
-	char *buffer = (char *) malloc(10);
-	buffer = "coucou";
-
+	int i;
 	struct sockaddr_in saddrServ; // Adresse serveur
 	struct hostent * hid;
+	obj* tab;
+
+	tab = (obj *)malloc(sizeof(obj) * TABLEN);
+	init_tab(tab);
 
 	printf("Connexion au serveur %s sur le port %s\n", argv[1], argv[2]);
 	servPort = atoi(argv[2]);
@@ -34,8 +35,7 @@ int main(int argc, char **argv)
 	hid = gethostbyname(servName);
 
 	saddrServ.sin_family = AF_INET; 				// Internet addresse
-	saddrServ.sin_port = htons(servPort); 			// Local port
-	//servAddr.sin_addr.s_addr = inet_addr(servName); // Convertion de l'adresse en binaire. Il faut donner l'adresse IP
+	saddrServ.sin_port = htons(servPort); 		// Local port
 	bcopy(hid->h_addr,&(saddrServ.sin_addr.s_addr), hid->h_length);
 
 	if ((connect(idSockCli, (struct sockaddr *) &saddrServ, lengthServ)) < 0) {
@@ -44,13 +44,16 @@ int main(int argc, char **argv)
 	}
 
 	printf("Connexion réussie\n");
-	send(idSockCli, buffer, sizeof(char)*10, 0);
-	printf("Message envoyé\n");
+	for (i=0; i<TABLEN; i++) {
+		printf("Envoie de l'objet: %s\n", tab[i].id);
+		send(idSockCli, &tab[i], sizeof(tab[0]), 0);
+	}
+	free(tab);
+	printf("Envoi terminé, fin de la connexion\n");
+	return 0;
 }
 
-obj* init_tab() {
-	obj *tab= (obj *)malloc(TABLEN);
-
+int init_tab(obj * tab) {
 	strcpy(tab[0].id,"ident_o1");
 	strcpy(tab[0].desc,"description_o1");
 	tab[0].ii = 11;
@@ -69,6 +72,8 @@ obj* init_tab() {
 	tab[2].jj = 32;
 	tab[2].dd = 30.2345;
 
-	strcpy(tab[3].id,NULL);
-	return tab;
+	strcpy(tab[3].id,"Fin");
+	strcpy(tab[3].id,"Objet de fin");
+	tab[3].ii = -1;
+	return 0;
 }
