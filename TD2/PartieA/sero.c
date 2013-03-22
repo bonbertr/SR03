@@ -65,6 +65,7 @@ int main(int argc, char **argv)
 					if (objet.ii != -1)
 						display_object(objet);
 				} while (objet.ii != -1);
+				close(idSockCli);
 				return FIN_SERVEUR;
 				break;
 			case -1:
@@ -74,7 +75,6 @@ int main(int argc, char **argv)
 				waitpid(pid, &status, 0);
 				if (status == FIN_SERVEUR) {
 					printf("Fin du traitement par le fils, terminaison du serveur\n");
-					close(idSockCli);
 					close(idSockServ);
 					return 0;
 				} else {
