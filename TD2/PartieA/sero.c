@@ -12,7 +12,6 @@ int main(int argc, char **argv)
 	int servPort;
 	int status;
 	pid_t pid;
-
 	obj objet;
 
 	printf("Le serveur fonctionne sur le port %s\n", argv[1]);
