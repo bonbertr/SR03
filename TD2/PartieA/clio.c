@@ -50,6 +50,7 @@ int main(int argc, char **argv)
 	}
 	free(tab);
 	printf("Envoi terminé, fin de la connexion\n");
+	close(idSockCli);
 	return 0;
 }
 

@@ -74,6 +74,8 @@ int main(int argc, char **argv)
 				waitpid(pid, &status, 0);
 				if (status == FIN_SERVEUR) {
 					printf("Fin du traitement par le fils, terminaison du serveur\n");
+					close(idSockCli);
+					close(idSockServ);
 					return 0;
 				} else {
 					printf("Fin du traitement par le fils, attente d'un nouveau client\n");
