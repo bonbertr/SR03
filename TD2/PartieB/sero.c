@@ -2,17 +2,24 @@
 #include "defobj.h"
 
 int display_object(obj object);
+void wait_handler();
+
+int status;
 
 int main(int argc, char **argv)
 {
 	int idSockServ, lengthServ; // Identifiant socket serveur et taille structure
 	int idSockCli, lengthCli; // Identifiant socket client et taille structure
-	struct sockaddr_in saddrServ; // Adresse serveur
 	struct sockaddr_in saddrCli; // Adresse client
+	struct sockaddr_in saddrServ; // Adresse serveur
 	int servPort;
-	int status;
 	pid_t pid;
 	obj objet;
+
+	// Changement du handler pour le signal SIGCHLD
+	struct sigaction sig;
+	sig.sa_handler = wait_handler;
+	sigaction(SIGCHLD, &sig, 0);
 
 	printf("Le serveur fonctionne sur le port %s\n", argv[1]);
 	servPort = atoi(argv[1]);
@@ -45,10 +52,14 @@ int main(int argc, char **argv)
 	}
 	
 	while (1) {
+		again:
 		printf("En attente de messages\n");
 		lengthCli = sizeof(saddrCli);
 		// Création d'une socket de service
 		if ((idSockCli = accept(idSockServ, (struct sockaddr *) &saddrCli, &lengthCli)) < 0) {
+			// Si l'appel système accept() est interrompu par le traitement du signal SIGCHLD, on se remet en attente
+			if (errno == EINTR)
+				goto again;
 			perror("accept() failed\n");
 			exit(0);
 		}
@@ -65,22 +76,23 @@ int main(int argc, char **argv)
 					if (objet.ii != -1)
 						display_object(objet);
 				} while (objet.ii != -1);
-				return FIN_SERVEUR;
+				sleep(1);
+				return 0;
 				break;
 			case -1:
 				perror("Erreur");
 				break;
 			default:
-				waitpid(pid, &status, 0);
-				if (status == FIN_SERVEUR) {
-					printf("Fin du traitement par le fils, terminaison du serveur\n");
-					return 0;
-				} else {
-					printf("Fin du traitement par le fils, attente d'un nouveau client\n");
-				}
+				printf("Délégation du traitement au fils\n");
 		}
 	}
 	return 0;
+}
+
+void wait_handler() {
+	printf("Reçu signal SIGCHLD\n");
+	waitpid(-1, &status, 0);
+	printf("Fils terminé avec status %d\n", status);
 }
 
 int display_object(obj object) {

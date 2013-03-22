@@ -6,7 +6,8 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <string.h>
+#include <signal.h>
+#include <errno.h>
 
 #define MAXBINDING 5
 #define TABLEN 4
-#define FIN_SERVEUR 0
