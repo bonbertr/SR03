@@ -5,24 +5,42 @@ int display_object(obj object);
 void wait_handler();
 int status;
 
+
 int traiterClient(int idSockCli)
 {
 	obj objet;
+	int rcv;
 	do {
 		if((recv(idSockCli, &objet, sizeof(objet), 0)) < 0) {
 			perror("rcv() Failed");
 			exit(0);
 		}
 		
+		display_object2(objet);
 		if (objet.ii != -1) {
-			display_object(objet);
-		}	
+            		objet.ii = objet.ii +10;
+            		objet.jj = objet.jj+10;
+            		objet.dd = objet.dd+10;
+            		
+		}
+
+		rcv = sizeof(objet);
+		// Envois du message modifié.
+		if(send(idSockCli, &objet, rcv, 0) != rcv)
+		{
+			perror("send() error not same size!");
+		}
+		else
+			printf("envoi au client de l'objet modifié\n\n");
+
+
 	   } while (objet.ii != -1);
 	
 	printf(" -- Marqueur de fin reçu, fin de transmission --\n\n");
-	sleep(1); //Pour avoir un dialogue un peu long entre le pere et le fils
+	close(idSockCli);//Pour avoir un dialogue un peu long entre le pere et le fils
 	return 0;
 }
+
 
 int main(int argc, char **argv)
 {
@@ -33,9 +51,7 @@ int main(int argc, char **argv)
 	int servPort;
 	pid_t pid;
 	obj objet;
-	char* Buffer;
-	int cb;
-
+	
 	// Changement du handler pour le signal SIGCHLD pour prevenir au processus pere la fin de son fils
 	struct sigaction sig;
 	sig.sa_handler = wait_handler; //signal envoyé au père qd le fils se termine
