@@ -15,11 +15,13 @@ int main(int argc, char **argv)
 	int servPort;
 	pid_t pid;
 	obj objet;
+	char* Buffer;
+	int cb;
 
-	// Changement du handler pour le signal SIGCHLD
+	// Changement du handler pour le signal SIGCHLD pour prevenir au processus pere la fin de son fils
 	struct sigaction sig;
-	sig.sa_handler = wait_handler;
-	sigaction(SIGCHLD, &sig, 0);
+	sig.sa_handler = wait_handler; //signal envoyé au père qd le fils se termine
+	sigaction(SIGCHLD, &sig, 0);//examiner action sigchild associé au sig
 
 	printf("Le serveur fonctionne sur le port %s\n", argv[1]);
 	servPort = atoi(argv[1]);
@@ -63,26 +65,29 @@ int main(int argc, char **argv)
 			perror("accept() failed\n");
 			exit(0);
 		}
+		printf("Connexion client\n");
 
 		pid = fork();
 		switch(pid) {
-			case 0:
+			case 0: // Fils
         		printf ("Traitement du client par le fils\n");
 				do {
 					if((recv(idSockCli, &objet, sizeof(objet), 0)) < 0) {
 						perror("rcv() Failed");
 						exit(0);
 					}
-					if (objet.ii != -1)
+					if (objet.ii != -1) {
 						display_object(objet);
+					}	
 				} while (objet.ii != -1);
-				sleep(1);
+				printf(" -- Marqueur de fin reçu, fin de transmission --\n\n");
+				sleep(1); //Pour avoir un dialogue un peu long entre le pere et le fils
 				return 0;
 				break;
 			case -1:
 				perror("Erreur");
 				break;
-			default:
+			default: // Père
 				printf("Délégation du traitement au fils\n");
 		}
 	}
@@ -91,16 +96,10 @@ int main(int argc, char **argv)
 
 void wait_handler() {
 	printf("Reçu signal SIGCHLD\n");
-	waitpid(-1, &status, 0);
-	printf("Fils terminé avec status %d\n", status);
-}
-
-int display_object(obj object) {
-	printf("Objet reçu:\n");
-	printf("%s\n", object.id);
-	printf("%s\n", object.desc);
-	printf("%d\n", object.ii);
-	printf("%d\n", object.jj);
-	printf("%f\n", object.dd);
-	return 0;
+	waitpid(-1, &status, 0); //Attendre n’importe lequel des processus fils.
+	
+	 if (WIFEXITED (status))
+        printf("Fils terminé avec status %d\n", status);
+    else
+        printf ("Erreur lors du traitement du fils\n\n");
 }
