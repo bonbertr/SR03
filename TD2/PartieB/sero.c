@@ -89,7 +89,7 @@ int main(int argc, char **argv)
 		switch(pid) {
 			case 0: // Fils
         			printf ("Traitement du client par le fils\n");
-				traiterClient(idSockCli);
+				return traiterClient(idSockCli);
 				break;
 			case -1:
 				perror("Erreur");
