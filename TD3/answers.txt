@@ -1,0 +1,88 @@
+Sujet: http://moodle.utc.fr/file.php/872/TD_P2013/td_web.html
+
+** 1 **
+
+nc tuxa.sme.utc 80 > ! question1-http10.html
+GET http://tuxa.sme.utc/ HTTP/1.0
+
+La réponse est 200 (OK).
+
+nc tuxa.sme.utc 80 > ! question1-http11.html
+GET http://tuxa.sme.utc/ HTTP/1.1
+
+La réponse est 400 (Bad Request)
+
+Dans la requête, tout en-tête n'est facultatif qu'avec HTTP 1.0, pas avec HTTP 1.1
+
+** 2 **
+
+Étant donné qu'on essaie de se connecter à un domaine hors de l'UTC depuis le réseau de l'UTC, il faut passer par le proxy de l'UTC:
+
+nc proxyweb.utc.fr 3128 > ! question2-fr.html
+GET http://www.google.fr/ HTTP/1.1
+
+La réponse est 200 (OK).
+
+nc proxyweb.utc.fr 3128 > ! question2-com.html
+GET http://www.google.com/ HTTP/1.1
+
+La réponse est 302 (Moved temporarily) avec redirection vers http://www.google.fr/
+
+
+** 3 **
+
+a - Visiter http://moodle.utc.fr/file.php/872/TD_P2013/td_web.html
+Trois requêtes sont effectuées pour charger la page. La première, pour le contenu de la page, retourne 200 (OK).
+La seconde, pour charger le logo de l'UTC, retourne 302 (Moved temporarily), avec une nouvelle URL à visiter pour trouver le logo
+("Location" dans l'en-tête de la réponse). Par conséquent, une troisième requête est effectuée pour récupérer l'image à la bonne URL, requête qui retourne 200 (OK).
+
+b - Visiter http://tuxa.sme.utc/~sr03/phpinfo/info_modules.php
+Il y a une différence entre l'en-tête de requête HTTP visualisé sur Firebug et celui visualisé sur le serveur:
+Ajout des champs:
+"Via: 1.1 proxy-cache.utc.fr:3128 (squid/2.6.STABLE18-20080214)"
+"X-Forwarded-For: 172.22.6.2"
+Cette différence est due au fait que les requêtes passent par l'intermédiaire sur proxy de l'UTC.
+
+c - L'adresse IP du client (REMOTE_ADDR) ne figure pas parmi l'en-tête HTTP car chaque protocole est chargé d'ajouter
+son propre en-tête de protocole. HTTP et IP sont deux protocoles différents du modèle OSI.
+L'adresse REMOTE_ADDR correspond à l'adresse du proxy, car dans le cas d'une requête par proxy, le proxy joue le rôle du serveur pour le client et le rôle du client pour le serveur.
+
+** 4 **
+
+a - Comparer la visite de http://tuxa.sme.utc/~sr03/phpinfo/info_variables.php?caelhR8349H
+avec http://tuxa.sme.utc/~sr03/phpinfo/info_variables.php
+Côté serveur, lorsque le paramètre est spécifié, on note la création de deux variables sans valeur (no value):
+_REQUEST["caelhR8349H"]
+_GET["caelhR8349H"]
+Hormis l'URL, l'en-tête de la requête HTTP ne change pas (GET: le passage des paramètres se fait par l'URL).
+
+b - Visiter http://tuxa.sme.utc/~sr03/phpinfo/info_variables.php?toto=tata&tutu=titi
+Les variables sont créées sur le serveur et possèdent les valeurs "tata" et "titi". Rien ne change dans
+l'en-tête de la requête HTTP (hormis l'URL).
+
+c - (Ressource: form-question4.html)
+Les paramètres n'apparaissent plus dans l'URL (POST). En revanche, la chaîne
+nom=mayssa&prenom=bertrand&spec=info&valider=Envoyer est ajoutée à l'en-tête de la requête HTTP.
+
+Avec nc:
+nc tuxa.sme.utc 80 > ! question4.html << EOF
+POST /~sr03/phpinfo/print_r_request.php HTTP/1.1
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 52
+
+nom=mayssa&prenom=bertrand&spec=info&valider=Envoyer
+
+EOF
+
+** 5 **
+
+cookie vers tuxa.sme.utc: réussite
+Explication:
+cookie vers sme.utc: réussite
+Explication:
+cookie vers utc: échec
+Explication:
+cookie vers utc.fr: échec
+Explication:
+cookie vers microsoft.com: échec
+Explication:

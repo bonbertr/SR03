@@ -1,0 +1,36 @@
+<html>
+	<head>
+		<style type="text/css">
+   	.tt { background-color: red; }
+		td.cell5 { border: 5px dashed blue; }
+		a:active { color: red; font-size: 50px; }
+		div#up { position:absolute; left:150px; top:150px; height:200px; 	overflow-x:hidden; overflow-y:auto; zindex:2}
+		#pushme { font-size: 24pt; }
+		</style>
+	</head>
+	<body>
+		<div id='up'>Je suis une balise div avec l'ID 'up'</div>
+		<div>
+			<span id='pushme' class='tt'>Mon super formulaire de cookies</span>
+		</div>
+		<table>
+			<tr>
+				<td class='cell5'><a href="http://www.w3.org/TR/html4/present/styles.html#h-14.2.3">mon super lien</a></td>
+				<td class="cell5 tt"> Une autre case de tableau avec la classe cell5 et la classe tt</td>
+			</tr>
+			<tr>
+				<td class='tt' >Je suis une case de tableau avec la classe 'tt'</td>
+				<td></td>
+			</tr>
+		</table>
+		<form name="formulaire_essai" method="POST" action='http://tuxa.sme.utc/~sr03/phpinfo/setcookie.php'>
+			<input type="text" name="name" value='mon_super_cookie'>
+			<input type="text" name="value" value='contenu_de_mon_super_cookie'>
+			<input type="text" name="path" value='chemin_de_mon_super_cookie'>
+			<input type="text" name="domain" value='le_domaine_de_mon_super_cookie'>
+			<input type="text" name="expireseconds" value='10'>
+			<input type="text" name="phpinfo" value=''>
+			<input type="submit" name="valider">
+		</form>
+	</body>
+</html>
