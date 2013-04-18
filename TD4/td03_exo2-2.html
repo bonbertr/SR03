@@ -1,0 +1,58 @@
+<!doctype html>
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <title>td03 exo1</title>
+</head>
+	<body>
+		<form name="formulaire_essai" onSubmit="return false" >
+			<input id='zoneSaisie' type="text" name="zone_saisie" value=''>
+		</form>
+		<div id="zoneAffichage">
+		</div>
+	</body>
+</html>
+
+<script language = "javascript" type="text/javascript">
+
+var previous = document.getElementById('zoneSaisie').value;
+
+function mainLoop() {
+	var current = document.getElementById('zoneSaisie').value;
+	if (current != previous) {
+		getListOfStudentsAsync('zoneSaisie','POST');
+		previous = current;
+	}
+	setTimeout("mainLoop()",300);
+}
+
+document.onreadystatechange = function () {
+  mainLoop();
+}
+
+function getListOfStudentsAsync(zoneSaisie, mode) {
+	string = document.getElementById(zoneSaisie).value;
+	xhr_obj = new XMLHttpRequest();
+	xhr_obj.onreadystatechange = function() {
+		// see http://www.w3schools.com/ajax/ajax_xmlhttprequest_onreadystatechange.asp
+		if (xhr_obj.readyState == 4 && xhr_obj.responseXML) {
+			var displayzone = document.getElementById('zoneAffichage');
+			displayzone.innerHTML = '';
+			var table = xhr_obj.responseXML.getElementsByTagName('utcstudent');
+			for (i=0; i<table.length; i++) {
+				displayzone.appendChild(document.createTextNode(table[i].textContent));
+				displayzone.innerHTML = displayzone.innerHTML + '<br>';
+			}
+		}
+	};
+
+	if (mode == 'GET') {
+		xhr_obj.open(mode, 'http://tuxa.sme.utc/~sr03/phpinfo/studentdata.php?debutnom='+ string, true);
+		xhr_obj.send(null);
+	} else if (mode == 'POST') {
+		xhr_obj.open(mode, 'http://tuxa.sme.utc/~sr03/phpinfo/studentdata.php', true);
+		xhr_obj.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+		xhr_obj.send("debutnom=" + string);
+	}
+}
+</script>

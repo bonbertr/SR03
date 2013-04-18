@@ -1,0 +1,21 @@
+<!doctype html>
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <title>td03 exo1</title>
+</head>
+	<body>
+		<form name="formulaire_essai" onSubmit="return false" >
+			<input id='zoneSaisie' type="text" name="zone_saisie" value=''>
+			<input type="submit" name="valider" onClick="displayData('zoneSaisie','zoneAffichage')">
+		</form>
+		<div id="zoneAffichage">
+		</div>
+	</body>
+</html>
+
+<script language = "javascript" type="text/javascript">
+function displayData(zoneSaisie, zoneAffichage) {
+	document.getElementById(zoneAffichage).innerHTML = "Bonjour! " + document.getElementById(zoneSaisie).value ;
+}
+</script>
